@@ -1,7 +1,16 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { logout, getCurrentUser } from '../services/api';
 import './Navbar.css';
 
 function Navbar() {
+  const navigate = useNavigate();
+  const user = getCurrentUser();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <nav className="app-navbar">
       <div className="navbar-brand">
@@ -16,6 +25,8 @@ function Navbar() {
       <div className="navbar-links">
         <Link to="/vehicles">Vehicles</Link>
         <Link to="/drivers">Drivers</Link>
+        {user && <span className="navbar-user">{user.name}</span>}
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
     </nav>
   );

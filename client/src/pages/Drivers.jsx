@@ -1,48 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { getDrivers, createDriver, deleteDriver } from '../services/api';
 import './Drivers.css';
 
-const initialDrivers = [
-  { id: 1, name: 'Alex Kumar', licenseNumber: 'DL-0420110012345', licenseCategory: 'LMV', licenseExpiry: '2027-05-20', contact: '9876543210', safetyScore: 92, status: 'Available' },
-  { id: 2, name: 'Priya Sharma', licenseNumber: 'DL-0420110067890', licenseCategory: 'HMV', licenseExpiry: '2025-01-15', contact: '9123456780', safetyScore: 78, status: 'On Trip' },
-  { id: 3, name: 'Rohit Verma', licenseNumber: 'DL-0420110054321', licenseCategory: 'LMV', licenseExpiry: '2026-11-30', contact: '9988776655', safetyScore: 60, status: 'Suspended' },
-];
-
 function Drivers() {
-  const [drivers, setDrivers] = useState(initialDrivers);
+  const [drivers, setDrivers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '', licenseNumber: '', licenseCategory: 'LMV', licenseExpiry: '', contact: '', safetyScore: '', status: 'Available',
   });
+
+  useEffect(() => {
+    loadDrivers();
+  }, []);
+
+  async function loadDrivers() {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getDrivers();
+      setDrivers(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+    setSaving(true);
 
-    const isDuplicate = drivers.some(
-      (d) => d.licenseNumber.toLowerCase() === formData.licenseNumber.toLowerCase()
-    );
-    if (isDuplicate) {
-      alert('License number must be unique!');
-      return;
+    try {
+      const newDriver = await createDriver({
+        ...formData,
+        safetyScore: Number(formData.safetyScore),
+      });
+
+      setDrivers([newDriver, ...drivers]);
+      setFormData({ name: '', licenseNumber: '', licenseCategory: 'LMV', licenseExpiry: '', contact: '', safetyScore: '', status: 'Available' });
+      setShowForm(false);
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
     }
-
-    const newDriver = {
-      id: Date.now(),
-      ...formData,
-      safetyScore: Number(formData.safetyScore),
-    };
-
-    setDrivers([...drivers, newDriver]);
-    setFormData({ name: '', licenseNumber: '', licenseCategory: 'LMV', licenseExpiry: '', contact: '', safetyScore: '', status: 'Available' });
-    setShowForm(false);
   };
 
-  const handleDelete = (id) => {
-    setDrivers(drivers.filter((d) => d.id !== id));
+  const handleDelete = async (id) => {
+    const previous = drivers;
+    setDrivers(drivers.filter((d) => d._id !== id));
+
+    try {
+      await deleteDriver(id);
+    } catch (err) {
+      setDrivers(previous);
+      alert(`Could not delete driver: ${err.message}`);
+    }
   };
 
   const isLicenseExpired = (expiryDate) => {
@@ -70,53 +93,59 @@ function Drivers() {
           </button>
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>License Number</th>
-                <th>Category</th>
-                <th>License Expiry</th>
-                <th>Contact</th>
-                <th>Safety Score</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {drivers.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.name}</td>
-                  <td>{d.licenseNumber}</td>
-                  <td>{d.licenseCategory}</td>
-                  <td>
-                    {d.licenseExpiry}
-                    {isLicenseExpired(d.licenseExpiry) && (
-                      <span className="expired-tag">Expired</span>
-                    )}
-                  </td>
-                  <td>{d.contact}</td>
-                  <td>
-                    <span className={d.safetyScore >= 80 ? 'score good' : d.safetyScore >= 60 ? 'score medium' : 'score low'}>
-                      {d.safetyScore}
-                    </span>
-                  </td>
-                  <td><span className={statusClass(d.status)}>{d.status}</span></td>
-                  <td>
-                    <button className="delete-btn" onClick={() => handleDelete(d.id)}>Delete</button>
-                  </td>
+        {error && <p className="page-error">{error}</p>}
+        {loading ? (
+          <p className="loading-text">Loading drivers...</p>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>License Number</th>
+                  <th>Category</th>
+                  <th>License Expiry</th>
+                  <th>Contact</th>
+                  <th>Safety Score</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {drivers.map((d) => (
+                  <tr key={d._id}>
+                    <td>{d.name}</td>
+                    <td>{d.licenseNumber}</td>
+                    <td>{d.licenseCategory}</td>
+                    <td>
+                      {new Date(d.licenseExpiry).toLocaleDateString()}
+                      {isLicenseExpired(d.licenseExpiry) && (
+                        <span className="expired-tag">Expired</span>
+                      )}
+                    </td>
+                    <td>{d.contact}</td>
+                    <td>
+                      <span className={d.safetyScore >= 80 ? 'score good' : d.safetyScore >= 60 ? 'score medium' : 'score low'}>
+                        {d.safetyScore}
+                      </span>
+                    </td>
+                    <td><span className={statusClass(d.status)}>{d.status}</span></td>
+                    <td>
+                      <button className="delete-btn" onClick={() => handleDelete(d._id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <h2>Add New Driver</h2>
               <form onSubmit={handleSubmit}>
+                {formError && <p className="form-error">{formError}</p>}
                 <input name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required />
                 <input name="licenseNumber" placeholder="License Number" value={formData.licenseNumber} onChange={handleChange} required />
                 <select name="licenseCategory" value={formData.licenseCategory} onChange={handleChange}>
@@ -139,7 +168,9 @@ function Drivers() {
 
                 <div className="modal-actions">
                   <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
-                  <button type="submit" className="save-btn">Save Driver</button>
+                  <button type="submit" className="save-btn" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Driver'}
+                  </button>
                 </div>
               </form>
             </div>

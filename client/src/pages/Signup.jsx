@@ -1,22 +1,34 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../services/api';
-import './Login.css';
+import { signup } from '../services/api';
+import './Signup.css';
 
-function Login() {
+function Signup() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await login({ email, password });
+      await signup({ name, email, password });
       navigate('/vehicles');
     } catch (err) {
       setError(err.message);
@@ -26,8 +38,8 @@ function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-bg-overlay"></div>
+    <div className="signup-page">
+      <div className="signup-bg-overlay"></div>
 
       <div className="brand-corner">
         <svg className="brand-icon" viewBox="0 0 24 24" fill="none">
@@ -40,11 +52,23 @@ function Login() {
       </div>
 
       <div className="glass-card">
-        <h2 className="welcome-title">Welcome</h2>
+        <h2 className="welcome-title">Create account</h2>
         <span className="accent-line"></span>
 
-        <form onSubmit={handleLogin} noValidate>
+        <form onSubmit={handleSignup} noValidate>
           {error && <p className="error-text">{error}</p>}
+
+          <label className="field">
+            <span className="field-label">Your name</span>
+            <input
+              type="text"
+              placeholder="Jane Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              required
+            />
+          </label>
 
           <label className="field">
             <span className="field-label">Your email</span>
@@ -59,28 +83,40 @@ function Login() {
           </label>
 
           <label className="field">
-            <span className="field-label">Your password</span>
+            <span className="field-label">Password</span>
             <input
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
+              autoComplete="new-password"
+              required
+            />
+          </label>
+
+          <label className="field">
+            <span className="field-label">Confirm password</span>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
               required
             />
           </label>
 
           <p className="terms-text">
-            By signing in you agree to our{' '}
+            By signing up you agree to our{' '}
             <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
           </p>
 
           <button type="submit" className="signin-btn" disabled={loading}>
-            {loading ? 'SIGNING IN...' : 'SIGN IN'}
+            {loading ? 'SIGNING UP...' : 'SIGN UP'}
           </button>
 
           <p className="switch-line">
-            Don't have an account? <Link to="/signup">Sign up</Link>
+            Already have an account? <Link to="/">Sign in</Link>
           </p>
         </form>
       </div>
@@ -88,4 +124,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signup;

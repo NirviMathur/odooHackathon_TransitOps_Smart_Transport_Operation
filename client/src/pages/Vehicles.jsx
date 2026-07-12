@@ -1,50 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import { getVehicles, createVehicle, deleteVehicle } from '../services/api';
 import './Vehicles.css';
 
-const initialVehicles = [
-  { id: 1, regNumber: 'UP16-AB-1234', name: 'Van-05', type: 'Van', capacity: 500, odometer: 12000, cost: 800000, status: 'Available' },
-  { id: 2, regNumber: 'UP16-CD-5678', name: 'Truck-02', type: 'Truck', capacity: 2000, odometer: 34500, cost: 1500000, status: 'On Trip' },
-  { id: 3, regNumber: 'UP16-EF-9012', name: 'Mini-Van-01', type: 'Van', capacity: 300, odometer: 8000, cost: 600000, status: 'In Shop' },
-];
-
 function Vehicles() {
-  const [vehicles, setVehicles] = useState(initialVehicles);
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     regNumber: '', name: '', type: 'Van', capacity: '', odometer: '', cost: '', status: 'Available',
   });
+
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
+  async function loadVehicles() {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getVehicles();
+      setVehicles(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+    setSaving(true);
 
-    const isDuplicate = vehicles.some(
-      (v) => v.regNumber.toLowerCase() === formData.regNumber.toLowerCase()
-    );
-    if (isDuplicate) {
-      alert('Registration number must be unique!');
-      return;
+    try {
+      const newVehicle = await createVehicle({
+        ...formData,
+        capacity: Number(formData.capacity),
+        odometer: Number(formData.odometer),
+        cost: Number(formData.cost),
+      });
+
+      setVehicles([newVehicle, ...vehicles]);
+      setFormData({ regNumber: '', name: '', type: 'Van', capacity: '', odometer: '', cost: '', status: 'Available' });
+      setShowForm(false);
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
     }
-
-    const newVehicle = {
-      id: Date.now(),
-      ...formData,
-      capacity: Number(formData.capacity),
-      odometer: Number(formData.odometer),
-      cost: Number(formData.cost),
-    };
-
-    setVehicles([...vehicles, newVehicle]);
-    setFormData({ regNumber: '', name: '', type: 'Van', capacity: '', odometer: '', cost: '', status: 'Available' });
-    setShowForm(false);
   };
 
-  const handleDelete = (id) => {
-    setVehicles(vehicles.filter((v) => v.id !== id));
+  const handleDelete = async (id) => {
+    const previous = vehicles;
+    setVehicles(vehicles.filter((v) => v._id !== id));
+
+    try {
+      await deleteVehicle(id);
+    } catch (err) {
+      setVehicles(previous);
+      alert(`Could not delete vehicle: ${err.message}`);
+    }
   };
 
   const statusClass = (status) => {
@@ -68,44 +91,50 @@ function Vehicles() {
           </button>
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Reg. Number</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Capacity (kg)</th>
-                <th>Odometer</th>
-                <th>Cost</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v) => (
-                <tr key={v.id}>
-                  <td>{v.regNumber}</td>
-                  <td>{v.name}</td>
-                  <td>{v.type}</td>
-                  <td>{v.capacity}</td>
-                  <td>{v.odometer} km</td>
-                  <td>₹{v.cost.toLocaleString()}</td>
-                  <td><span className={statusClass(v.status)}>{v.status}</span></td>
-                  <td>
-                    <button className="delete-btn" onClick={() => handleDelete(v.id)}>Delete</button>
-                  </td>
+        {error && <p className="page-error">{error}</p>}
+        {loading ? (
+          <p className="loading-text">Loading vehicles...</p>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reg. Number</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Capacity (kg)</th>
+                  <th>Odometer</th>
+                  <th>Cost</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {vehicles.map((v) => (
+                  <tr key={v._id}>
+                    <td>{v.regNumber}</td>
+                    <td>{v.name}</td>
+                    <td>{v.type}</td>
+                    <td>{v.capacity}</td>
+                    <td>{v.odometer} km</td>
+                    <td>₹{v.cost.toLocaleString()}</td>
+                    <td><span className={statusClass(v.status)}>{v.status}</span></td>
+                    <td>
+                      <button className="delete-btn" onClick={() => handleDelete(v._id)}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <h2>Add New Vehicle</h2>
               <form onSubmit={handleSubmit}>
+                {formError && <p className="form-error">{formError}</p>}
                 <input name="regNumber" placeholder="Registration Number" value={formData.regNumber} onChange={handleChange} required />
                 <input name="name" placeholder="Vehicle Name/Model" value={formData.name} onChange={handleChange} required />
                 <select name="type" value={formData.type} onChange={handleChange}>
@@ -125,7 +154,9 @@ function Vehicles() {
 
                 <div className="modal-actions">
                   <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
-                  <button type="submit" className="save-btn">Save Vehicle</button>
+                  <button type="submit" className="save-btn" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Vehicle'}
+                  </button>
                 </div>
               </form>
             </div>
