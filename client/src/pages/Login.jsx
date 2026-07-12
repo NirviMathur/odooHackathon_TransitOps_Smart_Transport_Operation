@@ -1,13 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
     console.log('Login attempt:', email, password);
+    navigate('/vehicles');
   };
 
   return (
@@ -15,7 +18,12 @@ function Login() {
       <div className="login-bg-overlay"></div>
 
       <div className="brand-corner">
-        <span className="brand-icon">🚚</span>
+        <svg className="brand-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M3 7h11v8H3V7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+          <path d="M14 10h4l3 3v2h-7v-5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+          <circle cx="7" cy="17" r="1.6" stroke="currentColor" strokeWidth="1.6"/>
+          <circle cx="17.5" cy="17" r="1.6" stroke="currentColor" strokeWidth="1.6"/>
+        </svg>
         <span className="brand-name">TransitOps</span>
       </div>
 

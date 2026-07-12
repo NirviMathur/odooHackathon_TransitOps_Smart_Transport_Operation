@@ -1,0 +1,201 @@
+.drivers-page {
+  padding: 32px 40px;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background: var(--bg-light);
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.page-header p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.add-btn {
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background: var(--navy-dark);
+}
+
+.table-wrapper {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: var(--bg-light);
+}
+
+th {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+td {
+  padding: 14px 16px;
+  font-size: 13.5px;
+  color: var(--text-dark);
+  border-top: 1px solid var(--border);
+}
+
+.expired-tag {
+  display: inline-block;
+  margin-left: 8px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.score {
+  font-weight: 700;
+}
+
+.score.good { color: var(--success-text); }
+.score.medium { color: var(--warning-text); }
+.score.low { color: var(--danger-text); }
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.badge.available { background: var(--success-bg); color: var(--success-text); }
+.badge.on-trip { background: var(--warning-bg); color: var(--warning-text); }
+.badge.off-duty { background: var(--neutral-bg); color: var(--neutral-text); }
+.badge.suspended { background: var(--danger-bg); color: var(--danger-text); }
+
+.delete-btn {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: var(--danger-text);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: var(--danger-bg);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.modal h2 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal input,
+.modal select {
+  padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: var(--orange);
+}
+
+.date-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 11px;
+  background: var(--neutral-bg);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save-btn {
+  flex: 1;
+  padding: 11px;
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
