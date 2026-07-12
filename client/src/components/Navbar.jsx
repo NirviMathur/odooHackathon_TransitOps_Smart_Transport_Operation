@@ -1,35 +1,35 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { logout, getCurrentUser } from '../services/api';
-import './Navbar.css';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
-function Navbar() {
-  const navigate = useNavigate();
-  const user = getCurrentUser();
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  if (!user) return null;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const links = [
+    { to: '/', label: 'Dashboard' },
+    { to: '/vehicles', label: 'Vehicles' },
+    { to: '/drivers', label: 'Drivers' },
+    { to: '/trips', label: 'Trips' },
+    { to: '/maintenance', label: 'Maintenance' },
+    { to: '/fuel-expenses', label: 'Fuel & Expenses' },
+    { to: '/reports', label: 'Reports' },
+  ];
 
   return (
-    <nav className="app-navbar">
-      <div className="navbar-brand">
-        <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
-          <path d="M3 7h11v8H3V7z" stroke="#f97316" strokeWidth="1.7" strokeLinejoin="round"/>
-          <path d="M14 10h4l3 3v2h-7v-5z" stroke="#f97316" strokeWidth="1.7" strokeLinejoin="round"/>
-          <circle cx="7" cy="17" r="1.6" stroke="#f97316" strokeWidth="1.7"/>
-          <circle cx="17.5" cy="17" r="1.6" stroke="#f97316" strokeWidth="1.7"/>
-        </svg>
-        <span>TransitOps</span>
-      </div>
+    <nav className="navbar">
+      <div className="navbar-brand">TransitOps</div>
       <div className="navbar-links">
-        <Link to="/vehicles">Vehicles</Link>
-        <Link to="/drivers">Drivers</Link>
-        {user && <span className="navbar-user">{user.name}</span>}
-        <button className="logout-btn" onClick={handleLogout}>Logout</button>
+        {links.map((l) => (
+          <NavLink key={l.to} to={l.to} end={l.to === '/'} className={({ isActive }) => (isActive ? 'active' : '')}>
+            {l.label}
+          </NavLink>
+        ))}
+      </div>
+      <div className="navbar-user">
+        <span>{user.name} · {user.role}</span>
+        <button onClick={logout}>Logout</button>
       </div>
     </nav>
   );
 }
-
-export default Navbar;

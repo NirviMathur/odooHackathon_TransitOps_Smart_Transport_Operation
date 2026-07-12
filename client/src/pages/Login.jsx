@@ -1,91 +1,71 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../services/api';
-import './Login.css';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function Login() {
+  const { login, register } = useAuth();
+  const navigate = useNavigate();
+  const [mode, setMode] = useState('login');
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'FleetManager' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      await login({ email, password });
-      navigate('/vehicles');
+      if (mode === 'login') {
+        await login(form.email, form.password);
+      } else {
+        await register(form);
+      }
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="login-page">
-      <div className="login-bg-overlay"></div>
+    <div className="auth-page">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <h1>TransitOps</h1>
+        <p className="subtitle">Smart Transport Operations Platform</p>
 
-      <div className="brand-corner">
-        <svg className="brand-icon" viewBox="0 0 24 24" fill="none">
-          <path d="M3 7h11v8H3V7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
-          <path d="M14 10h4l3 3v2h-7v-5z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
-          <circle cx="7" cy="17" r="1.6" stroke="currentColor" strokeWidth="1.6"/>
-          <circle cx="17.5" cy="17" r="1.6" stroke="currentColor" strokeWidth="1.6"/>
-        </svg>
-        <span className="brand-name">TransitOps</span>
-      </div>
+        {mode === 'register' && (
+          <>
+            <label>Name</label>
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <label>Role</label>
+            <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+              <option value="FleetManager">Fleet Manager</option>
+              <option value="Driver">Driver</option>
+              <option value="SafetyOfficer">Safety Officer</option>
+              <option value="FinancialAnalyst">Financial Analyst</option>
+            </select>
+          </>
+        )}
 
-      <div className="glass-card">
-        <h2 className="welcome-title">Welcome</h2>
-        <span className="accent-line"></span>
+        <label>Email</label>
+        <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
 
-        <form onSubmit={handleLogin} noValidate>
-          {error && <p className="error-text">{error}</p>}
+        <label>Password</label>
+        <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
 
-          <label className="field">
-            <span className="field-label">Your email</span>
-            <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
-          </label>
+        {error && <div className="error-banner">{error}</div>}
 
-          <label className="field">
-            <span className="field-label">Your password</span>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </label>
+        <button type="submit" disabled={loading}>{loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}</button>
 
-          <p className="terms-text">
-            By signing in you agree to our{' '}
-            <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
-          </p>
+        <button type="button" className="link-btn" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
+          {mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Log in'}
+        </button>
 
-          <button type="submit" className="signin-btn" disabled={loading}>
-            {loading ? 'SIGNING IN...' : 'SIGN IN'}
-          </button>
-
-          <p className="switch-line">
-            Don't have an account? <Link to="/signup">Sign up</Link>
-          </p>
-        </form>
-      </div>
+        {mode === 'login' && (
+          <p className="hint">Demo: fleet@transitops.com / password123 (after running the seed script)</p>
+        )}
+      </form>
     </div>
   );
 }
-
-export default Login;

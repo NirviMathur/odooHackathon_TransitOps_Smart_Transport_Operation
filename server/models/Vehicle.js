@@ -1,16 +1,20 @@
 const mongoose = require('mongoose');
 
+const VEHICLE_STATUS = ['Available', 'On Trip', 'In Shop', 'Retired'];
+
 const vehicleSchema = new mongoose.Schema(
   {
-    regNumber: { type: String, required: [true, 'Registration number is required'], unique: true, trim: true },
-    name: { type: String, required: [true, 'Vehicle name/model is required'], trim: true },
-    type: { type: String, enum: ['Van', 'Truck', 'Bike'], default: 'Van' },
-    capacity: { type: Number, required: [true, 'Capacity is required'] },
-    odometer: { type: Number, default: 0 },
-    cost: { type: Number, required: [true, 'Acquisition cost is required'] },
-    status: { type: String, enum: ['Available', 'On Trip', 'In Shop', 'Retired'], default: 'Available' },
+    registrationNumber: { type: String, required: true, unique: true, trim: true, uppercase: true },
+    name: { type: String, required: true, trim: true }, // Vehicle Name/Model
+    type: { type: String, required: true, trim: true }, // e.g. Van, Truck, Bike
+    maxLoadCapacity: { type: Number, required: true, min: 0 }, // kg
+    odometer: { type: Number, required: true, default: 0, min: 0 },
+    acquisitionCost: { type: Number, required: true, min: 0 },
+    region: { type: String, trim: true, default: 'Unassigned' },
+    status: { type: String, enum: VEHICLE_STATUS, default: 'Available' },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);
+module.exports.VEHICLE_STATUS = VEHICLE_STATUS;
