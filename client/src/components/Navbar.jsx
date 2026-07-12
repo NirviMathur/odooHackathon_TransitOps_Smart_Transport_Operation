@@ -16,6 +16,7 @@ function Navbar() {
       <div className="navbar-links">
         <Link to="/vehicles">Vehicles</Link>
         <Link to="/drivers">Drivers</Link>
+        <Link to="/trips">Trips</Link>
       </div>
     </nav>
   );

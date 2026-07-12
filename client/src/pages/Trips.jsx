@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import TripForm from "../components/trips/TripForm";
 import TripList from "../components/trips/TripList";
 import { getTrips } from "../services/api";
+import "./Trips.css";
 
 export default function Trips() {
   const [trips, setTrips] = useState([]);
@@ -23,14 +24,17 @@ export default function Trips() {
   }, [loadTrips]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Trip Management</h1>
+    <div className="trips-page">
+      <div className="page-header">
+        <div>
+          <h1>Trip Management</h1>
+          <p>Create trips, dispatch, and track their lifecycle end-to-end.</p>
+        </div>
+      </div>
+
       <TripForm onTripCreated={loadTrips} />
-      {loading ? (
-        <p className="text-slate-400 text-sm">Loading trips...</p>
-      ) : (
-        <TripList trips={trips} onChanged={loadTrips} />
-      )}
+
+      {loading ? <p>Loading trips...</p> : <TripList trips={trips} onChanged={loadTrips} />}
     </div>
   );
 }
