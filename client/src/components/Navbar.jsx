@@ -25,12 +25,8 @@ function Navbar() {
       <div className="navbar-links">
         <Link to="/vehicles">Vehicles</Link>
         <Link to="/drivers">Drivers</Link>
-<<<<<<< HEAD
         {user && <span className="navbar-user">{user.name}</span>}
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
-=======
-        <Link to="/trips">Trips</Link>
->>>>>>> bb29c9ac95232bb33178158897c349599768cf45
       </div>
     </nav>
   );

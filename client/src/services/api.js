@@ -1,10 +1,8 @@
-<<<<<<< HEAD
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const TOKEN_KEY = 'transitops_token';
 const USER_KEY = 'transitops_user';
 
-// ---------- Token/session helpers ----------
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -31,7 +29,6 @@ function saveSession(data) {
   localStorage.setItem(USER_KEY, JSON.stringify(data.user));
 }
 
-// ---------- Core request helper ----------
 async function request(path, { method = 'GET', body, auth = false } = {}) {
   const headers = { 'Content-Type': 'application/json' };
 
@@ -61,7 +58,6 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
   return data;
 }
 
-// ---------- Auth ----------
 export async function signup({ name, email, password }) {
   const data = await request('/auth/signup', {
     method: 'POST',
@@ -80,7 +76,6 @@ export async function login({ email, password }) {
   return data;
 }
 
-// ---------- Vehicles ----------
 export function getVehicles() {
   return request('/vehicles', { auth: true });
 }
@@ -93,7 +88,6 @@ export function deleteVehicle(id) {
   return request(`/vehicles/${id}`, { method: 'DELETE', auth: true });
 }
 
-// ---------- Drivers ----------
 export function getDrivers() {
   return request('/drivers', { auth: true });
 }
@@ -105,28 +99,3 @@ export function createDriver(driver) {
 export function deleteDriver(id) {
   return request(`/drivers/${id}`, { method: 'DELETE', auth: true });
 }
-=======
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-});
-
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// ---- Trip Engine calls ----
-export const getTrips = (status) => api.get("/trips", { params: status ? { status } : {} });
-export const getAvailableVehicles = () => api.get("/trips/available-vehicles");
-export const getAvailableDrivers = () => api.get("/trips/available-drivers");
-export const createTrip = (data) => api.post("/trips", data);
-export const dispatchTrip = (id) => api.patch(`/trips/${id}/dispatch`);
-export const completeTrip = (id, data) => api.patch(`/trips/${id}/complete`, data);
-export const cancelTrip = (id) => api.patch(`/trips/${id}/cancel`);
-
-export default api;
->>>>>>> bb29c9ac95232bb33178158897c349599768cf45
